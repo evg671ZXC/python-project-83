@@ -3,7 +3,7 @@ from psycopg2.extras import NamedTupleCursor
 from contextlib import contextmanager
 from dotenv import load_dotenv
 from .log import LOGGER
-import datetime
+from datetime import datetime
 import os
 
 load_dotenv()

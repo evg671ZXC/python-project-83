@@ -5,6 +5,7 @@ from flask import (
     redirect,
     url_for,
     flash,
+    get_flashed_messages,
     abort
 )
 from dotenv import load_dotenv
@@ -35,10 +36,10 @@ def urls():
         search_url = request.form.get('url')
         errors = validate(search_url)
         if errors:
-            return render_template(
-                'index.html',
-                error=errors[0]
-            )
+            for error in errors:
+                flash(error, "danger")
+                return render_template("index.html"), 422
+
         id = add_url(search_url)
         urls = get_urls()
         flash("Страница успешно добавлена", "success")
@@ -47,7 +48,7 @@ def urls():
     urls = get_urls()
 
     return render_template(
-        "urls/index.html",
+        "urls.html",
         data=urls,
     )
 
@@ -59,6 +60,6 @@ def url_show(id):
         abort(404)
 
     return render_template(
-        "urls/url.html",
+        "url.html",
         url=url
     )

@@ -4,9 +4,9 @@ import validators
 def validate(url):
     errors = []
     if url is None:
-        errors.append("Required input field")
+        errors.append("Заполните это поле")
     if not validators.url(url):
-        errors.append("URL's entered incorrectly")
+        errors.append("Некорректный URL")
     if len(url) > 255:
-        errors.append("URL's longer than 255 characters")
+        errors.append("URL превышает 255 символов")
     return errors
