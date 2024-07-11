@@ -3,7 +3,7 @@ import validators
 
 def validate(url):
     errors = []
-    if url is None:
+    if url == '':
         errors.append("Заполните это поле")
     if not validators.url(url):
         errors.append("Некорректный URL")

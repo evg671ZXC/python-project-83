@@ -27,7 +27,7 @@ def get_urls():
     with connectionDB() as conn, \
          conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
-            "SELECT * FROM urls ORDER BY created_at DESC;",
+            '''SELECT * FROM urls ORDER BY id ASC;''',
         )
         urls = cur.fetchall()
         return urls
@@ -37,7 +37,7 @@ def get_url(id):
     with connectionDB() as conn, \
          conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
-            'SELECT * FROM urls WHERE id = %s", (id,)',
+            '''SELECT * FROM urls WHERE id = %s''', (id,),
         )
         url_data = cur.fetchone()
         if not url_data:
@@ -49,9 +49,9 @@ def add_url(url):
     with connectionDB() as conn, \
          conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
-            "INSERT INTO urls (name, created_at) \
-            VALUES (%s, %s);",
-            (url, datetime.now()),
+            '''INSERT INTO urls (name, created_at) \
+            VALUES (%s, %s) RETURNING id;''',
+            (url, datetime.now().strftime("%d.%m.%Y %X")),
         )
         id = cur.fetchone().id
         conn.commit()
