@@ -4,8 +4,7 @@ from flask import (
     request,
     redirect,
     url_for,
-    flash,
-    get_flashed_messages
+    flash
 )
 from dotenv import load_dotenv
 from .validators_url import validate
@@ -32,7 +31,6 @@ def index():
 @app.route('/urls', methods=['GET', 'POST'])
 def urls():
     urls = get_urls()
-    messages = get_flashed_messages(with_categories=True)
 
     if request.method == 'POST':
         search_url = request.form.get('url')
@@ -40,7 +38,7 @@ def urls():
         if errors:
             for error in errors:
                 flash(error, "danger")
-                return render_template("index.html", messages=messages), 422
+                return render_template("index.html"), 422
 
         for url in urls:
             if search_url in url.name:
