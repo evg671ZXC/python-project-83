@@ -7,12 +7,18 @@ from flask import (
     flash
 )
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 from .validators_url import validate
 from .db import (
     get_url,
     get_urls,
-    add_url
+    add_url,
+    add_url_checks,
+    get_urls_checks,
+    get_url_checks_by_id
 )
+from requests import RequestException
+from .log import LOGGER
 import os
 
 
@@ -40,13 +46,16 @@ def urls():
                 flash(error, "danger")
                 return render_template("index.html"), 422
 
+        url = urlparse(search_url)
+        correct_url = f"{url.scheme}://{url.hostname}"
+
         for url in urls:
-            if search_url in url.name:
+            if correct_url in url.name:
                 id = url.id
                 flash('Страница уже существует', 'info')
                 return redirect(url_for('url_show', id=id))
 
-        id = add_url(search_url)
+        id = add_url(correct_url)
         flash("Страница успешно добавлена", "success")
         return redirect(url_for("url_show", id=id))
 
@@ -57,13 +66,28 @@ def urls():
     )
 
 
-@app.route("/urls/<int:id>")
+@app.route('/urls/<int:id>')
 def url_show(id):
     url = get_url(id)
-
+    urls_checks = get_urls_checks()
     return render_template(
         "url.html",
         id=url.id,
         name=url.name,
-        date=url.created_at
+        date=url.created_at,
+        checks=urls_checks
     )
+
+
+@app.post('/urls/<id>/checks')
+def url_check(id):
+    try:
+        result_check = {"status_code": 200, "h1": "", "title":"", "description":""}
+        add_url_checks(id, result_check)
+        flash('Страница успешно проверена', 'success')
+        return redirect(url_for('url_show', id=id))
+    
+    except RequestException as e:
+        flash('Произошла ошибка при проверке', 'danger')
+        LOGGER.error(e)
+        return redirect(url_for('url_show', id=id))

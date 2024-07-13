@@ -45,14 +45,52 @@ def get_url(id):
         return url_data
 
 
+def get_urls_checks():
+    with connectionDB() as conn, \
+         conn.cursor(cursor_factory=NamedTupleCursor) as cur:
+        cur.execute(
+            '''SELECT DISTINCT ON (url_id) * FROM url_checks ORDER BY url_id DESC, id ASC;'''
+            )
+        urls_checks = cur.fetchall()
+        return urls_checks
+
+
+def get_url_checks_by_id(url_id):
+    with connectionDB() as conn, \
+         conn.cursor(cursor_factory=NamedTupleCursor) as cur:
+        cur.execute(
+            '''SELECT * FROM url_checks WHERE url_id = %s''', (url_id,),
+        )
+        url_checks_data = cur.fetchone()
+        return url_checks_data
+
+
 def add_url(url):
     with connectionDB() as conn, \
          conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
             '''INSERT INTO urls (name, created_at) \
             VALUES (%s, %s) RETURNING id;''',
-            (url, datetime.now().strftime("%d.%m.%Y %X")),
+            (url, datetime.today()),
         )
         id = cur.fetchone().id
         conn.commit()
         return id
+
+
+def add_url_checks(url_id, result_check):
+    with connectionDB() as conn, \
+         conn.cursor() as cur:
+        cur.execute(
+            '''INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at)\
+            VALUES (%s, %s, %s, %s, %s, %s);''',
+            (   
+                url_id,
+                result_check["status_code"],
+                result_check["h1"],
+                result_check["title"],
+                result_check["description"],
+                datetime.today()
+                )
+        )
+        conn.commit()
