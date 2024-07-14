@@ -14,7 +14,6 @@ from .db import (
     get_urls,
     add_url,
     add_url_checks,
-    get_urls_checks,
     get_url_checks_by_id
 )
 from requests import RequestException
@@ -62,32 +61,37 @@ def urls():
     return render_template(
         "urls.html",
         urls=urls,
-        code=200
     )
 
 
 @app.route('/urls/<int:id>')
 def url_show(id):
     url = get_url(id)
-    urls_checks = get_urls_checks()
+    url_checks = get_url_checks_by_id(url.id)
     return render_template(
         "url.html",
         id=url.id,
         name=url.name,
         date=url.created_at,
-        checks=urls_checks
+        checks=url_checks
     )
 
 
 @app.post('/urls/<id>/checks')
 def url_check(id):
     try:
-        result_check = {"status_code": 200, "h1": "", "title":"", "description":""}
+        result_check = {
+                        "status_code": None,
+                        "h1": "",
+                        "title": "",
+                        "description": ""
+                        }
         add_url_checks(id, result_check)
         flash('Страница успешно проверена', 'success')
-        return redirect(url_for('url_show', id=id))
-    
+
     except RequestException as e:
         flash('Произошла ошибка при проверке', 'danger')
         LOGGER.error(e)
+
+    finally:
         return redirect(url_for('url_show', id=id))

@@ -23,16 +23,6 @@ def connectionDB():
         conn.close()
 
 
-def get_urls():
-    with connectionDB() as conn, \
-         conn.cursor(cursor_factory=NamedTupleCursor) as cur:
-        cur.execute(
-            '''SELECT * FROM urls ORDER BY id ASC;''',
-        )
-        urls = cur.fetchall()
-        return urls
-
-
 def get_url(id):
     with connectionDB() as conn, \
          conn.cursor(cursor_factory=NamedTupleCursor) as cur:
@@ -45,31 +35,45 @@ def get_url(id):
         return url_data
 
 
-def get_urls_checks():
+def get_url_checks_by_id(url_id):
     with connectionDB() as conn, \
          conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
-            '''SELECT DISTINCT ON (url_id) * FROM url_checks ORDER BY url_id DESC, id ASC;'''
+            '''SELECT * FROM url_checks WHERE url_id = %s ORDER BY id ASC;''',
+            (url_id, )
             )
         urls_checks = cur.fetchall()
         return urls_checks
 
 
-def get_url_checks_by_id(url_id):
+def get_urls():
     with connectionDB() as conn, \
          conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
-            '''SELECT * FROM url_checks WHERE url_id = %s''', (url_id,),
+            '''SELECT
+                urls.id,
+                urls.name,
+                url_checks.created_at,
+                url_checks.status_code
+                FROM urls LEFT JOIN (
+                    SELECT DISTINCT ON (url_id)
+                    url_id,
+                    created_at,
+                    status_code
+                    FROM url_checks
+                    ORDER BY url_id, created_at DESC)
+                    AS url_checks ON urls.id = url_checks.url_id
+                ORDER BY urls.id ASC;'''
         )
-        url_checks_data = cur.fetchone()
-        return url_checks_data
+        urls_checks = cur.fetchall()
+        return urls_checks
 
 
 def add_url(url):
     with connectionDB() as conn, \
          conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
-            '''INSERT INTO urls (name, created_at) \
+            '''INSERT INTO urls (name, created_at)
             VALUES (%s, %s) RETURNING id;''',
             (url, datetime.today()),
         )
@@ -82,9 +86,10 @@ def add_url_checks(url_id, result_check):
     with connectionDB() as conn, \
          conn.cursor() as cur:
         cur.execute(
-            '''INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at)\
+            '''INSERT INTO url_checks
+            (url_id, status_code, h1, title, description, created_at)
             VALUES (%s, %s, %s, %s, %s, %s);''',
-            (   
+            (
                 url_id,
                 result_check["status_code"],
                 result_check["h1"],
