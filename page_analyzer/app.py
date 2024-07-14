@@ -17,6 +17,7 @@ from .db import (
     get_url_checks_by_id
 )
 from .log import LOGGER
+from bs4 import BeautifulSoup
 import requests
 import os
 
@@ -77,17 +78,32 @@ def url_show(id):
     )
 
 
+def parse_page_htlm(htlm_data):
+    soup = BeautifulSoup(htlm_data, "html.parser")
+    for meta in soup.find_all('meta'):
+        if meta.get("name") == "description":
+            description = meta.get('content')
+            break
+    result_parse = {
+        "h1": soup.find("h1").string if soup.find("h1") else "",
+        "title": soup.find("title").string if soup.find("title") else "",
+        "description": description[:250] + '...',
+    }
+    return result_parse
+
+
 @app.post('/urls/<id>/checks')
 def url_check(id):
     try:
         url = get_url(id)
         check = requests.get(url.name)
         check.raise_for_status()
+        parser = parse_page_htlm(check.content)
         result_check = {
                         "status_code": check.status_code,
-                        "h1": "",
-                        "title": "",
-                        "description": ""
+                        "h1": parser.get('h1'),
+                        "title": parser.get('title'),
+                        "description": parser.get('description')
                         }
         add_url_checks(id, result_check)
         flash('Страница успешно проверена', 'success')
