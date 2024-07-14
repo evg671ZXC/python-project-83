@@ -82,6 +82,7 @@ def url_check(id):
     try:
         url = get_url(id)
         check = requests.get(url.name)
+        check.raise_for_status()
         result_check = {
                         "status_code": check.status_code,
                         "h1": "",
