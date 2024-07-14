@@ -16,8 +16,8 @@ from .db import (
     add_url_checks,
     get_url_checks_by_id
 )
-from requests import RequestException
 from .log import LOGGER
+import requests
 import os
 
 
@@ -80,8 +80,10 @@ def url_show(id):
 @app.post('/urls/<id>/checks')
 def url_check(id):
     try:
+        url = get_url(id)
+        check = requests.get(url.name)
         result_check = {
-                        "status_code": None,
+                        "status_code": check.status_code,
                         "h1": "",
                         "title": "",
                         "description": ""
@@ -89,7 +91,7 @@ def url_check(id):
         add_url_checks(id, result_check)
         flash('Страница успешно проверена', 'success')
 
-    except RequestException as e:
+    except requests.exceptions.RequestException as e:
         flash('Произошла ошибка при проверке', 'danger')
         LOGGER.error(e)
 

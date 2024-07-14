@@ -30,8 +30,6 @@ def get_url(id):
             '''SELECT * FROM urls WHERE id = %s''', (id,),
         )
         url_data = cur.fetchone()
-        if not url_data:
-            return "URL not found", 404
         return url_data
 
 
