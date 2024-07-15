@@ -37,9 +37,12 @@ def get_url_checks_by_id(url_id):
     with connectionDB() as conn, \
          conn.cursor(cursor_factory=NamedTupleCursor) as cur:
         cur.execute(
-            '''SELECT * FROM url_checks WHERE url_id = %s ORDER BY id ASC;''',
+            '''SELECT *
+                FROM url_checks
+                WHERE url_id = %s
+                ORDER BY id ASC;''',
             (url_id, )
-            )
+        )
         urls_checks = cur.fetchall()
         return urls_checks
 
@@ -94,6 +97,6 @@ def add_url_checks(url_id, result_check):
                 result_check["title"],
                 result_check["description"],
                 datetime.today()
-                )
+            )
         )
         conn.commit()

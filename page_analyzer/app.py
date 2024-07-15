@@ -100,11 +100,11 @@ def url_check(id):
         check.raise_for_status()
         parser = parse_page_htlm(check.content)
         result_check = {
-                        "status_code": check.status_code,
-                        "h1": parser.get('h1'),
-                        "title": parser.get('title'),
-                        "description": parser.get('description')
-                        }
+            "status_code": check.status_code,
+            "h1": parser.get('h1'),
+            "title": parser.get('title'),
+            "description": parser.get('description')
+            }
         add_url_checks(id, result_check)
         flash('Страница успешно проверена', 'success')
 
