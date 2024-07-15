@@ -80,19 +80,24 @@ def url_show(id):
 
 def parse_page_htlm(htlm_data):
     soup = BeautifulSoup(htlm_data, "html.parser")
-    for meta in soup.find_all('meta'):
-        if meta.get("name") == "description":
-            description = meta.get('content')
-            break
+
     result_parse = {
         "h1": soup.find("h1").string if soup.find("h1") else "",
         "title": soup.find("title").string if soup.find("title") else "",
-        "description": description[:250] + '...',
+        "description": "",
     }
+
+    for description in soup.find_all("meta", attrs={"name": "description"}):
+        description_text = description.get("content") if description else ""
+        if len(description_text) > 255:
+            description_text = description_text[:250] + ".."
+
+        result_parse["description"] = description_text
+
     return result_parse
 
 
-@app.post('/urls/<id>/checks')
+@app.post('/urls/<int:id>/checks')
 def url_check(id):
     try:
         url = get_url(id)
