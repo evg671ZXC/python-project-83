@@ -104,7 +104,7 @@ def url_check(id):
             "h1": parser.get('h1'),
             "title": parser.get('title'),
             "description": parser.get('description')
-            }
+        }
         add_url_checks(id, result_check)
         flash('Страница успешно проверена', 'success')
 
