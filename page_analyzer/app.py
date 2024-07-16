@@ -87,7 +87,7 @@ def parse_page_htlm(htlm_data):
         "description": "",
     }
 
-    description = soup.find_all("meta", attrs={"name": "description"})[0]
+    description = soup.find("meta", attrs={"name": "description"})
     description_text = description.get("content") if description else ""
     if len(description_text) > 255:
         description_text = description_text[:253].strip() + ".."
