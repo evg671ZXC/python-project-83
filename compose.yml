@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: db_app
+    image: "postgres"
+    restart: always
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: secret_key
+      POSTGRES_DB: test_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  web:
+    container_name: page_analyzer
+    build:
+      context: "."
+      dockerfile: "Dockerfile"
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - db
+
+volumes:
+  pgdata: null
